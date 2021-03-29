@@ -12,8 +12,10 @@
 	}
 ```
 
+
+Version:[![](https://jitpack.io/v/ftmtshuashua/WorldView-Android.svg)](https://jitpack.io/#ftmtshuashua/WorldView-Android)
 ```
 	dependencies {
-	        implementation 'com.github.ftmtshuashua:WorldView-Android:0.0.1'
+	        implementation 'com.github.ftmtshuashua:WorldView-Android:version'
 	}
 ```
