@@ -409,7 +409,7 @@ public class WorldView extends View {
 
     @Override
     protected final Parcelable onSaveInstanceState() {
-        ViewSavedStateUtils state = new ViewSavedStateUtils(super.onSaveInstanceState());
+        WorldSaveState state = new WorldSaveState(super.onSaveInstanceState());
         state.write(mWorldParams);
         onSaveWorldState(state);
         return state;
@@ -417,7 +417,7 @@ public class WorldView extends View {
 
     @Override
     protected final void onRestoreInstanceState(Parcelable state) {
-        ViewSavedStateUtils ss = (ViewSavedStateUtils) state;
+        WorldSaveState ss = (WorldSaveState) state;
         super.onRestoreInstanceState(ss.getSuperState());
         mWorldParams = ss.read();
         onRestoreWorldState(ss);
@@ -428,7 +428,7 @@ public class WorldView extends View {
      *
      * @param save
      */
-    protected void onSaveWorldState(ViewSavedStateUtils save) {
+    protected void onSaveWorldState(WorldSaveState save) {
 
     }
 
@@ -437,7 +437,7 @@ public class WorldView extends View {
      *
      * @param read
      */
-    protected void onRestoreWorldState(ViewSavedStateUtils read) {
+    protected void onRestoreWorldState(WorldSaveState read) {
 
     }
 
