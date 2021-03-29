@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * Created by ACap on 2021/2/24 11:15
  * </pre>
  */
-class WorldSaveState extends View.BaseSavedState {
+public class WorldSaveState extends View.BaseSavedState {
     ArrayList<Object> data = new ArrayList<>();
     private int mNativePtr = 0; // used by native code
 
