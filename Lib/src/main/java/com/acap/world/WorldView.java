@@ -2,6 +2,7 @@ package com.acap.world;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -9,9 +10,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Scroller;
-
-import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
 
 
 /**
@@ -91,18 +89,18 @@ public class WorldView extends View {
         init(context, null, 0);
     }
 
-    public WorldView(Context context, @Nullable AttributeSet attrs) {
+    public WorldView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs, 0);
     }
 
-    public WorldView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public WorldView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs, defStyleAttr);
     }
 
 
-    private void init(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    private void init(Context context, AttributeSet attrs, int defStyleAttr) {
         mWorldParams = new WorldParameter();
         mGestureListener = new GestureListener();
         mGestureDetector = new GestureDetector(context, mGestureListener);
@@ -313,7 +311,7 @@ public class WorldView extends View {
         super.computeScroll();
         if (mScroller.computeScrollOffset()) {//判断Scroller是否执行完毕
             scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
-            ViewCompat.postInvalidateOnAnimation(this);
+            postInvalidateOnAnimation(this);
         }
     }
 
@@ -355,7 +353,7 @@ public class WorldView extends View {
 
         mScroller.startScroll(getScrollX(), getScrollY(), trim_dx, trim_dy, duration);
 
-        ViewCompat.postInvalidateOnAnimation(this);
+        postInvalidateOnAnimation(this);
     }
 
     @Override
@@ -384,7 +382,7 @@ public class WorldView extends View {
     protected void measureWorldSize() {
         if (getWidth() > 0 && getHeight() > 0) {
             onMeasureWorldSize(mWorldParams, getWidth(), getHeight());
-            ViewCompat.postInvalidateOnAnimation(this);
+            postInvalidateOnAnimation(this);
         } else {//重新测量
             requestLayout();
         }
@@ -409,7 +407,6 @@ public class WorldView extends View {
     protected void onDrawWorld(Canvas canvas) {
     }
 
-    @Nullable
     @Override
     protected final Parcelable onSaveInstanceState() {
         ViewSavedStateUtils state = new ViewSavedStateUtils(super.onSaveInstanceState());
@@ -636,4 +633,11 @@ public class WorldView extends View {
         return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
 
+    private static void postInvalidateOnAnimation(View view) {
+        if (Build.VERSION.SDK_INT >= 16) {
+            view.postInvalidateOnAnimation();
+        } else {
+            view.postInvalidate();
+        }
+    }
 }
