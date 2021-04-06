@@ -152,14 +152,19 @@ public class WorldBufferView extends WorldView {
         @Override
         public void run() {
             WorldParameter params = getWorldParams();
-            Bitmap bitmap = onCreateBuffer(params.getWorldWidth(), params.getWorldHeight());
-            onDrawWorldBackground(new Canvas(bitmap));
-
-            if (isCancel) {
-                bitmap.recycle();
-            } else {
-                if (mAction != null) {
-                    mAction.call(bitmap);
+            int worldWidth = params.getWorldWidth();
+            int worldHeight = params.getWorldHeight();
+            if (worldWidth > 0 && worldHeight > 0) {
+                Bitmap bitmap = onCreateBuffer(worldWidth, worldHeight);
+                if (bitmap != null) {
+                    onDrawWorldBackground(new Canvas(bitmap));
+                    if (isCancel) {
+                        bitmap.recycle();
+                    } else {
+                        if (mAction != null) {
+                            mAction.call(bitmap);
+                        }
+                    }
                 }
             }
         }
