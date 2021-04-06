@@ -338,7 +338,6 @@ public class WorldView extends View {
         if (!mScroller.isFinished()) {
             mScroller.abortAnimation();
         }
-//        LogUtils.i("Scroll", MessageFormat.format("call - smoothScrollTo({0,number,0},{1,number,0})", destX, destY));
         int duration = TIME_FLING_ANIM;
 
         WorldParameter world = getWorldParams();
@@ -356,15 +355,15 @@ public class WorldView extends View {
         postInvalidateOnAnimation(this);
     }
 
+
     @Override
     protected final void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        int saveCount = canvas.getSaveCount();
-        onDrawWorld(canvas);
-        canvas.restoreToCount(saveCount);
+        drawWorld(canvas);
 
         if (mOnWorldCameraChangeListener != null) mOnWorldCameraChangeListener.onChange(getWorldParams());
     }
+
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
@@ -375,6 +374,33 @@ public class WorldView extends View {
     public void onDrawForeground(Canvas canvas) {
         super.onDrawForeground(canvas);
     }
+
+    //开始绘制世界
+    void drawWorld(Canvas canvas) {
+
+        onDrawWorldBackground(canvas);
+
+        onDrawWorldForeground(canvas);
+    }
+
+    /**
+     * 绘制世界的背景，通常这部分内容是静止不动的.
+     * 如果绘制背景非常的耗时，可以考虑使用 {@link WorldBufferView} 。它对背景绘制作了缓冲
+     *
+     * @param canvas
+     */
+    protected void onDrawWorldBackground(Canvas canvas) {
+    }
+
+    /**
+     * 绘制世界的前景，一些动态效果在这里被绘制
+     *
+     * @param canvas
+     */
+    protected void onDrawWorldForeground(Canvas canvas) {
+
+    }
+
 
     /**
      * 请求重新测量世界的大小
@@ -399,13 +425,6 @@ public class WorldView extends View {
         world.setWorldSize(width, height);
     }
 
-    /**
-     * 在这里将整个世界绘制出来
-     *
-     * @param canvas
-     */
-    protected void onDrawWorld(Canvas canvas) {
-    }
 
     @Override
     protected final Parcelable onSaveInstanceState() {
