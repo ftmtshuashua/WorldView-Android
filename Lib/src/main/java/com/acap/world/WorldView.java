@@ -126,18 +126,11 @@ public class WorldView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int measuredWidth = getMeasuredWidth();
-        int measuredHeight = getMeasuredHeight();
-        int width = getWidth();
-        int height = getHeight();
-//        LogUtils.i("Scroll", MessageFormat.format("onMeasure() -> 测量:{0,number,0}x{1,number,0} - 真实:{2,number,0}x{3,number,0}", measuredWidth, measuredHeight, width, height));
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-//        LogUtils.i("Scroll", MessageFormat.format("onLayout({0,number,0},{1,number,0},{2,number,0},{3,number,0})", left, top, right, bottom));
-//        LogUtils.i("Scroll", MessageFormat.format("onLayout() -> 测量:{0,number,0}x{1,number,0} - 真实:{2,number,0}x{3,number,0}", getMeasuredWidth(), getMeasuredHeight(), getWidth(), getHeight()));
         final int width = getWidth();
         final int height = getHeight();
 
@@ -359,7 +352,7 @@ public class WorldView extends View {
     @Override
     protected final void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        drawWorld(canvas);
+        onDrawWorld(canvas);
 
         if (mOnWorldCameraChangeListener != null) mOnWorldCameraChangeListener.onChange(getWorldParams());
     }
@@ -376,28 +369,7 @@ public class WorldView extends View {
     }
 
     //开始绘制世界
-    void drawWorld(Canvas canvas) {
-
-        onDrawWorldBackground(canvas);
-
-        onDrawWorldForeground(canvas);
-    }
-
-    /**
-     * 绘制世界的背景，通常这部分内容是静止不动的.
-     * 如果绘制背景非常的耗时，可以考虑使用 {@link WorldBufferView} 。它对背景绘制作了缓冲
-     *
-     * @param canvas
-     */
-    protected void onDrawWorldBackground(Canvas canvas) {
-    }
-
-    /**
-     * 绘制世界的前景，一些动态效果在这里被绘制
-     *
-     * @param canvas
-     */
-    protected void onDrawWorldForeground(Canvas canvas) {
+    protected void onDrawWorld(Canvas canvas) {
 
     }
 

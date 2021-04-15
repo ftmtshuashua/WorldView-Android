@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 
 /**
@@ -17,9 +19,22 @@ import android.util.AttributeSet;
  */
 public class WorldBufferView extends WorldView {
 
+    /**
+     * 缓冲对象
+     */
     private Bitmap mBuffer;
+    /**
+     * 用于创建缓冲
+     */
     private BufferBuilder mBufferBuilder;  //Buffer构造器
-    private Paint mPaint = new Paint();
+
+    private Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    /**
+     * 构建缓冲的标志位，当它为TRUE时候，缓冲将被刷新
+     */
+    private boolean mIsBuildBuffer = true;
+
 
     public WorldBufferView(Context context) {
         super(context);
@@ -34,9 +49,9 @@ public class WorldBufferView extends WorldView {
     }
 
     @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        clearBuffer();
+    protected void measureWorldSize() {
+        super.measureWorldSize();
+        setBufferReset();
     }
 
     /**
@@ -51,37 +66,26 @@ public class WorldBufferView extends WorldView {
     }
 
     /**
-     * 清理缓冲数据
+     * 重置缓冲数据，使用新的缓冲数据替代原来的缓冲数据
      */
-    public void clearBuffer() {
-        if (mBuffer != null) {
-            mBuffer.recycle();
-            mBuffer = null;
-        }
-    }
-
-    /**
-     * 刷新缓冲数据
-     */
-    public void refreshBuffer() {
-        builder();
+    public void setBufferReset() {
+        mIsBuildBuffer = true;
+        postInvalidateAtThread();
     }
 
     //开始绘制世界
-    void drawWorld(Canvas canvas) {
+    protected final void onDrawWorld(Canvas canvas) {
         if (mBuffer == null) {
-            onDrawWorldBufferBuilder(canvas);
+            onDrawWorldLauncher(canvas);
         }
 
-        //没有缓冲或者需要刷新时构建缓冲
-        if (mBufferBuilder == null && mBuffer == null) {
-            builder();
-        }
+        onBuildBuffer();
 
         if (mBuffer != null) {
             canvas.drawBitmap(mBuffer, 0, 0, mPaint);
         }
-        onDrawWorldForeground(canvas);
+
+        onDrawWorldAnimation(canvas);
     }
 
     /**
@@ -89,40 +93,70 @@ public class WorldBufferView extends WorldView {
      *
      * @param canvas
      */
-    protected void onDrawWorldBufferBuilder(Canvas canvas) {
+    protected void onDrawWorldLauncher(Canvas canvas) {
 
     }
 
     /**
-     * 再线程中构建缓冲
+     * 绘制缓冲内容，通常这部分内容是静止不动的.
+     *
+     * @param canvas
      */
-    private void builder() {
-        if (mBufferBuilder == null) {
-            mBufferBuilder = new BufferBuilder();
-            mBufferBuilder.setOnBufferBuildListener(bitmap -> {
-                setBuffer(bitmap);
+    protected void onDrawWorldBuffer(Canvas canvas) {
+    }
+
+    /**
+     * 绘制世界的动效，一些动态效果在这里被绘制
+     *
+     * @param canvas
+     */
+    protected void onDrawWorldAnimation(Canvas canvas) {
+
+    }
+
+
+    //buffer的构建
+    private void onBuildBuffer() {
+        //如果需要构建Buffer,需要验证是否正在构建,正在构建的Buffer通常的历史的
+        if (mIsBuildBuffer) {
+            if (mBufferBuilder == null) {
+                mIsBuildBuffer = false;
+                mBufferBuilder = new BufferBuilder();
+                mBufferBuilder.setOnBufferBuildListener(bitmap -> {
+                    setBuffer(bitmap);
+
+
+                    mBufferBuilder = null;
+                });
+                mBufferBuilder.start();
+            } else {
+                mBufferBuilder.stop();
                 mBufferBuilder = null;
-            });
-            mBufferBuilder.start();
-        } else {
-            mBufferBuilder.cancel();
-            mBufferBuilder = null;
-            builder();
+                postInvalidateAtThread();
+            }
         }
     }
+
 
     /**
      * 同步Buffer
      */
     private void setBuffer(Bitmap bitmap) {
-        Bitmap oldbuffer = mBuffer;
+        final Bitmap buffer_old = mBuffer;
         mBuffer = bitmap;
         postInvalidateAtThread();
 
-        if (oldbuffer != null) {
-            oldbuffer.recycle();
+        if (buffer_old != null) {
+            new Handler(Looper.getMainLooper()).postDelayed(() -> buffer_old.recycle(), 100);
         }
 
+    }
+
+    private void clearBuffer() {
+        if (mBuffer != null) {
+            mBuffer.recycle();
+            mBuffer = null;
+        }
     }
 
     private final void postInvalidateAtThread() {
@@ -137,7 +171,6 @@ public class WorldBufferView extends WorldView {
     private final class BufferBuilder extends Thread {
 
         private Action<Bitmap> mAction;
-        private boolean isCancel = false;
 
         public BufferBuilder() {
             super();
@@ -157,8 +190,8 @@ public class WorldBufferView extends WorldView {
             if (worldWidth > 0 && worldHeight > 0) {
                 Bitmap bitmap = onCreateBuffer(worldWidth, worldHeight);
                 if (bitmap != null) {
-                    onDrawWorldBackground(new Canvas(bitmap));
-                    if (isCancel) {
+                    onDrawWorldBuffer(new Canvas(bitmap));
+                    if (isInterrupted()) {
                         bitmap.recycle();
                     } else {
                         if (mAction != null) {
@@ -169,9 +202,6 @@ public class WorldBufferView extends WorldView {
             }
         }
 
-        public void cancel() {
-            isCancel = true;
-        }
     }
 
     private interface Action<T> {
