@@ -130,7 +130,7 @@ public class WorldBufferView extends WorldView {
                 });
                 mBufferBuilder.start();
             } else {
-                mBufferBuilder.stop();
+                mBufferBuilder.interrupt();
                 mBufferBuilder = null;
                 postInvalidateAtThread();
             }
